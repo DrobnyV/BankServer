@@ -36,7 +36,7 @@ def handle_client(connection, client_inet_address):
                                 if len(parts) != 3:
                                     connection.send("Invalid AD command format.\n".encode())
                                     continue
-                                account_and_ip, amount = parts
+                                account_and_ip, amount = parts[1], parts[2]
                                 account_code, ip = account_and_ip.split("/")
                                 amount = float(amount)
                                 if amount <= 0:
