@@ -17,16 +17,15 @@ class Account:
         return self.balance
 
     @staticmethod
-    def create_account(bank_code,account_number, balance = 0):
-        if account_number in range(10000,99999):
-            conn = Connection().get_connection()
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO accounts (account_number,bank_id,balance) VALUES (?)", (account_number,bank_code,balance))
-            conn.commit()
-            conn.close()
-            return Account(account_number,bank_code,balance)
-        else:
-            print("Account number must be between 10000 and 99999")
+    def create_account(bank_code):
+        conn = Connection().get_connection()
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO accounts (bank_id) VALUES (?)", (bank_code,))
+        conn.commit()
+        account_number = cursor.lastrowid
+        conn.close()
+        return account_number
+
 
 
 
@@ -61,8 +60,8 @@ class Bank:
         return self.bank_code
 
 
-    def add_account(self,account_number,balance = 0):
-        Account.create_account(account_number,self.bank_code,balance)
+    def add_account(self):
+        return Account.create_account(self.bank_code)
 
     def get_clients(self):
         return None

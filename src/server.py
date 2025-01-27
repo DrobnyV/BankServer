@@ -21,6 +21,9 @@ def handle_client(connection, client_inet_address):
                 match client_message:
                     case "bc":
                         print("BC " + bank.get_bank_code())
+                    case "ac":
+                        account_number = bank.add_account()
+                        print("AC " + str(account_number) + "/" + bank.get_bank_code())
                     case "exit":
                         connection.send("Closing connection.".encode())
                         break
