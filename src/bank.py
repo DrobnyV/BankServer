@@ -8,7 +8,22 @@ class Account:
         self.bank_code = bank_code
 
     def deposit(self, amount):
+        if amount <= 0:
+            raise ValueError("Deposit amount must be greater than zero.")
+
         self.balance += amount
+        conn = Connection().get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            UPDATE accounts
+            SET balance = ?
+            WHERE account_number = ? AND bank_code = ?
+            """,
+            (self.balance, self.account_number, self.bank_code)
+        )
+        conn.commit()
+        conn.close()
 
     def withdraw(self, amount):
         self.balance -= amount
@@ -37,7 +52,23 @@ class Account:
         conn.close()
         return next_account_number
 
-
+    @staticmethod
+    def get_account(account_number, bank_code):
+        conn = Connection().get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT account_number, bank_code, balance
+            FROM accounts
+            WHERE account_number = ? AND bank_code = ?
+            """,
+            (account_number, bank_code)
+        )
+        row = cursor.fetchone()
+        conn.close()
+        if row is None:
+            raise ValueError(f"Account {account_number}/{bank_code} not found.")
+        return Account(account_number=row[0], bank_code=row[1], balance=row[2])
 
 
 class Bank:
@@ -63,7 +94,6 @@ class Bank:
             bank = Bank(row[0])
         else:
             bank = Bank.create_bank(bank_code)
-
         conn.close()
         return bank
 
