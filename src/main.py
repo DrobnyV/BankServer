@@ -1,3 +1,4 @@
+import configparser
 import socket
 import threading
 
@@ -5,7 +6,9 @@ from src.server import accept_clients
 
 
 def main():
-    server_inet_address = ("127.0.0.1", 65430)
+    config = configparser.ConfigParser()
+    config.read("conf.ini")
+    server_inet_address = (config["SERVER"]["HOST"], int(config["SERVER"]["PORT"]))
     server_socket = socket.socket()
     server_socket.bind(server_inet_address)
     server_socket.listen()

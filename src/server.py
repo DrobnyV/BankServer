@@ -3,7 +3,6 @@ import threading
 
 from src.bank import Bank
 
-server_inet_address = ("127.0.0.1", 65430)
 CLIENT_TIMEOUT = 60
 
 def handle_client(connection, client_inet_address):
@@ -12,7 +11,7 @@ def handle_client(connection, client_inet_address):
 
     try:
         connection.send("AHOJ\n".encode())
-        bank = Bank.get_bank(server_inet_address[0])
+        bank = Bank.get_bank(client_inet_address[0])
         while True:
             try:
                 client_message = connection.recv(100).decode("utf-8").strip().lower()
