@@ -1,3 +1,4 @@
+from src.bank import Account
 from src.command_interface import Command
 
 
@@ -24,7 +25,7 @@ class ADCommand(Command):
                 connection.send("Deposit amount must be greater than 0.\n".encode())
                 return
             account_code = int(account_code)
-            account = bank.get_account(account_code, ip)
+            account = Account.get_account(account_code, ip)
             account.deposit(amount)
             print(f"Balance after deposit: {account.get_balance()}")
         except ValueError:
