@@ -4,12 +4,12 @@ from src.command_interface import Command
 
 class BCCommand(Command):
     def execute(self, connection, bank, client_message):
-        print("BC " + bank.get_bank_code())
+        connection.send("BC " + bank.get_bank_code())
 
 class ACCommand(Command):
     def execute(self, connection, bank, client_message):
         account_number = bank.add_account()
-        print("AC " + str(account_number) + "/" + bank.get_bank_code())
+        connection.send("AC " + str(account_number) + "/" + bank.get_bank_code())
 
 class ADCommand(Command):
     def execute(self, connection, bank, client_message):
@@ -27,7 +27,7 @@ class ADCommand(Command):
             account_code = int(account_code)
             account = Account.get_account(account_code, ip)
             account.deposit(amount)
-            print(f"Balance after deposit: {account.get_balance()}")
+            connection.send(f"Balance after deposit: {account.get_balance()}")
         except ValueError:
             connection.send("Invalid account or amount.\n".encode())
         except Exception as e:
