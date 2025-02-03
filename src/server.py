@@ -3,6 +3,7 @@ import socket
 import threading
 
 from src.bank import Bank
+from src.commands import GetCommands
 
 config = configparser.ConfigParser()
 config.read("conf.ini")
@@ -17,46 +18,17 @@ def handle_client(connection, client_inet_address):
         bank = Bank.get_bank(server_inet_address[0])
         while True:
             try:
-                client_message = connection.recv(100).decode("utf-8").strip().lower()
-
-                print(f"Received from {client_inet_address}: {client_message}")
-                if client_message == "":
-                    connection.send(f"You have to write something\n".encode())
+                client_message = connection.recv(1024).decode().strip()
+                if not client_message:
+                    command = GetCommands.get_command("unknown")
                 else:
-
-                    match client_message.split()[0]:
-                        case "bc":
-                            print("BC " + bank.get_bank_code())
-                        case "ac":
-                            account_number = bank.add_account()
-                            print("AC " + str(account_number) + "/" + bank.get_bank_code())
-                        case "ad":
-                            try:
-                                parts = client_message.split()
-                                if len(parts) != 3:
-                                    connection.send("Invalid AD command format.\n".encode())
-                                    continue
-                                account_and_ip, amount = parts[1], parts[2]
-                                account_code, ip = account_and_ip.split("/")
-                                amount = float(amount)
-                                if amount <= 0:
-                                    connection.send("Deposit amount must be greater than 0.\n".encode())
-                                    continue
-                                account_code = int(account_code)
-                                account = bank.get_account(account_code,ip)
-                                account.deposit(500)
-                                print(f"Balance after deposit: {account.get_balance()}")
-                            except ValueError:
-                                connection.send("Invalid account or amount.\n".encode())
-                            except Exception as e:
-                                connection.send(f"Error processing deposit: {e}\n".encode())
-                        case "exit":
-                            connection.send("Closing connection.".encode())
-                            break
-                        case "help":
-                            connection.send("Available commands: exit, help, BC, AC, AD, AW, AB, AR, BA, BN".encode())
-                        case _:
-                            connection.send("Unknown command".encode())
+                    parts = client_message.split()
+                    if parts:
+                        command_type = parts[0].lower()
+                        command = GetCommands.get_command(command_type)
+                    else:
+                        command = GetCommands.get_command("unknown")
+                command.execute(connection, bank, client_message)
             except socket.timeout:
                 connection.send("Disconnected due to inactivity.".encode())
                 break
