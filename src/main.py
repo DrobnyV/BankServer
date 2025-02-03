@@ -2,10 +2,12 @@ import configparser
 import socket
 import threading
 
+from src.db import Connection
 from src.server import accept_clients
 
 
 def main():
+    Connection.initialize_db()
     config = configparser.ConfigParser()
     config.read("conf.ini")
     server_inet_address = (config["SERVER"]["HOST"], int(config["SERVER"]["PORT"]))

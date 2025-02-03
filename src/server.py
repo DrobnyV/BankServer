@@ -1,20 +1,20 @@
 import configparser
 import socket
 import threading
-from traceback import print_tb
 
 from src.bank import Bank
 
 config = configparser.ConfigParser()
 config.read("conf.ini")
 CLIENT_TIMEOUT = int(config["SERVER"]["TIMEOUT"])
+server_inet_address = (config["SERVER"]["HOST"], int(config["SERVER"]["PORT"]))
 
 def handle_client(connection, client_inet_address):
     connection.settimeout(CLIENT_TIMEOUT)
     print(f"Client connected from {client_inet_address[0]}:{client_inet_address[1]}")
     try:
         connection.send("AHOJ\n".encode())
-        bank = Bank.get_bank(client_inet_address[0])
+        bank = Bank.get_bank(server_inet_address[0])
         while True:
             try:
                 client_message = connection.recv(100).decode("utf-8").strip().lower()

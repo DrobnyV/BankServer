@@ -35,21 +35,21 @@ class Account:
     def create_account(bank_code):
         conn = Connection().get_connection()
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT IFNULL(MAX(account_number), 9999) FROM accounts WHERE bank_code = ?",
-            (bank_code,)
-        )
+        cursor.execute("SELECT IFNULL(MAX(account_number), 9999) FROM accounts")
         max_account_number = cursor.fetchone()[0]
         next_account_number = max_account_number + 1
-        if next_account_number > 99999:
+        if next_account_number < 10000:
+            next_account_number = 10000
+        elif next_account_number > 99999:
             conn.close()
-            raise ValueError(f"Cannot create account: account_number exceeds 99999 for bank_code {bank_code}.")
+            raise ValueError("Cannot create account: account_number exceeds 99999.")
         cursor.execute(
             "INSERT INTO accounts (bank_code, account_number) VALUES (?, ?)",
             (bank_code, next_account_number)
         )
         conn.commit()
         conn.close()
+
         return next_account_number
 
     @staticmethod
