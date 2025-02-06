@@ -26,7 +26,24 @@ class Account:
         conn.close()
 
     def withdraw(self, amount):
+        if amount <= 0:
+            raise ValueError("Withdrawal amount must be greater than zero.")
+        if self.balance < amount:
+            raise ValueError("Insufficient funds.")
+
         self.balance -= amount
+        conn = Connection().get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """  
+            UPDATE accounts  
+            SET balance = ?  
+            WHERE account_number = ? AND bank_code = ?  
+            """,
+            (self.balance, self.account_number, self.bank_code)
+        )
+        conn.commit()
+        conn.close()
 
     def get_balance(self):
         return self.balance

@@ -33,6 +33,31 @@ class ADCommand(Command):
         except Exception as e:
             connection.send(f"Error processing deposit: {e}\n".encode())
 
+class AWCommand(Command):
+    def execute(self, connection, bank, client_message):
+        try:
+            parts = client_message.split()
+            if len(parts) != 3:
+                connection.send("Invalid AW command format.\n".encode())
+                return
+            account_and_ip, amount = parts[1], parts[2]
+            account_code, ip = account_and_ip.split("/")
+            amount = float(amount)
+            if amount <= 0:
+                connection.send("Withdrawal amount must be greater than 0.\n".encode())
+                return
+            account_code = int(account_code)
+            account = Account.get_account(account_code, ip)
+            if account.get_balance() < amount:
+                connection.send("Insufficient funds.\n".encode())
+                return
+            account.withdraw(amount)
+            connection.send(f"Balance after withdrawal: {account.get_balance()}".encode())
+        except ValueError:
+            connection.send("Invalid account or amount.\n".encode())
+        except Exception as e:
+            connection.send(f"Error processing withdrawal: {e}\n".encode())
+
 class ExitCommand(Command):
     def execute(self, connection, bank, client_message):
         connection.send("Closing connection.".encode())
@@ -52,6 +77,7 @@ class GetCommands:
             "bc": BCCommand(),
             "ac": ACCommand(),
             "ad": ADCommand(),
+            "aw": AWCommand(),
             "exit": ExitCommand(),
             "help": HelpCommand()
         }
