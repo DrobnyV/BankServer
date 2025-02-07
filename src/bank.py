@@ -87,6 +87,19 @@ class Account:
             raise ValueError(f"Account {account_number}/{bank_code} not found.")
         return Account(account_number=row[0], bank_code=row[1], balance=row[2])
 
+    def remove(self):
+        conn = Connection().get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """  
+            DELETE FROM accounts  
+            WHERE account_number = ? AND bank_code = ?  
+            """,
+            (self.account_number, self.bank_code)
+        )
+        conn.commit()
+        conn.close()
+
 
 class Bank:
     def __init__(self, bank_code):

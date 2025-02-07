@@ -9,7 +9,7 @@ class BCCommand(Command):
 class ACCommand(Command):
     def execute(self, connection, bank, client_message):
         account_number = bank.add_account()
-        connection.send("AC " + str(account_number) + "/" + bank.get_bank_code())
+        connection.send(("AC " + str(account_number) + "/" + bank.get_bank_code()).encode())
 
 class ADCommand(Command):
     def execute(self, connection, bank, client_message):
@@ -76,6 +76,31 @@ class ABCommand(Command):
             connection.send(f"Error retrieving balance: {e}\n".encode())
 
 
+class ARCommand(Command):
+    def execute(self, connection, bank, client_message):
+        try:
+            parts = client_message.split()
+            if len(parts) != 2:
+                connection.send("Invalid AR command format.\n".encode())
+                return
+            account_and_ip = parts[1]
+            account_code, ip = account_and_ip.split("/")
+            account_code = int(account_code)
+            account = Account.get_account(account_code, ip)
+
+            if account is None:
+                connection.send("Account not found.\n".encode())
+                return
+
+            account.remove()
+            connection.send("Account successfully removed.\n".encode())
+
+        except ValueError:
+            connection.send("Invalid account.\n".encode())
+        except Exception as e:
+            connection.send(f"Error removing account: {e}\n".encode())
+
+
 class ExitCommand(Command):
     def execute(self, connection, bank, client_message):
         connection.send("Closing connection.".encode())
@@ -97,6 +122,7 @@ class GetCommands:
             "ad": ADCommand(),
             "aw": AWCommand(),
             "ab": ABCommand(),
+            "ar": ARCommand(),
             "exit": ExitCommand(),
             "help": HelpCommand()
         }
