@@ -134,10 +134,20 @@ class Bank:
     def add_account(self):
         return Account.create_account(self.bank_code)
 
-    def get_clients(self):
-        return None
+    def get_bank_info(self):
+        conn = Connection().get_connection()
+        cursor = conn.cursor()
 
-    def get_total_balance(self):
-        total_balance = 0
-        return total_balance
+        cursor.execute("""
+            SELECT COUNT(account_number), COALESCE(SUM(balance), 0)
+            FROM accounts
+            WHERE bank_code = ?
+        """, (self.bank_code,))
+
+        num_clients, total_balance = cursor.fetchone()
+
+        conn.close()
+        return num_clients, total_balance
+
+
 

@@ -100,6 +100,15 @@ class ARCommand(Command):
         except Exception as e:
             connection.send(f"Error removing account: {e}\n".encode())
 
+class BACommand(Command):
+    def execute(self, connection, bank, client_message):
+        bank_amount = bank.get_bank_info()[1]
+        connection.send(("BA " + str(bank_amount)).encode())
+
+class BNCommand(Command):
+    def execute(self, connection, bank, client_message):
+        bank_count = bank.get_bank_info()[0]
+        connection.send(("BN " + str(bank_count)).encode())
 
 class ExitCommand(Command):
     def execute(self, connection, bank, client_message):
@@ -123,6 +132,8 @@ class GetCommands:
             "aw": AWCommand(),
             "ab": ABCommand(),
             "ar": ARCommand(),
+            "ba": BACommand(),
+            "bn": BNCommand(),
             "exit": ExitCommand(),
             "help": HelpCommand()
         }
