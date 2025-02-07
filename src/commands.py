@@ -1,5 +1,6 @@
 from src.bank import Account
 from src.command_interface import Command
+from src.proxy import proxy_request
 
 
 class BCCommand(Command):
@@ -33,6 +34,12 @@ class ADCommand(Command):
                 return
 
             account_code = int(account_code)
+
+            if ip != bank.get_bank_code():
+                response = proxy_request(ip, client_message)
+                connection.send(response.encode())
+                return
+
             account = Account.get_account(account_code, ip)
             account.deposit(amount)
             connection.send("AD\r\n".encode())
@@ -60,6 +67,12 @@ class AWCommand(Command):
                 return
 
             account_code = int(account_code)
+
+            if ip != bank.get_bank_code():
+                response = proxy_request(ip, client_message)
+                connection.send(response.encode())
+                return
+
             account = Account.get_account(account_code, ip)
 
             if account.get_balance() < amount:
@@ -68,7 +81,6 @@ class AWCommand(Command):
 
             account.withdraw(amount)
             connection.send("AW\r\n".encode())
-
 
         except ValueError:
             connection.send("ER Invalid account or amount.\r\n".encode())
@@ -87,15 +99,19 @@ class ABCommand(Command):
             account_and_ip = parts[1]
             account_code, ip = account_and_ip.split("/")
             account_code = int(account_code)
-            account = Account.get_account(account_code, ip)
 
+            if ip != bank.get_bank_code():
+                response = proxy_request(ip, client_message)
+                connection.send(response.encode())
+                return
+
+            account = Account.get_account(account_code, ip)
             connection.send(f"AB {account.get_balance()}\r\n".encode())
 
         except ValueError:
             connection.send("ER Invalid account.\r\n".encode())
         except Exception as e:
             connection.send(f"ER {e}\r\n".encode())
-
 
 class ARCommand(Command):
     def execute(self, connection, bank, client_message):
