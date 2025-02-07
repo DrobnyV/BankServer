@@ -20,16 +20,18 @@ def handle_client(connection, client_inet_address):
         bank = Bank.get_bank(server_inet_address[0])
         while True:
             try:
-                client_message = connection.recv(1024).decode().strip()
-                if not client_message:
-                    command = GetCommands.get_command("unknown")
+                data = connection.recv(1024).decode().strip()
+                if data:
+                    client_message = data
                 else:
-                    parts = client_message.split()
-                    if parts:
-                        command_type = parts[0].lower()
-                        command = GetCommands.get_command(command_type)
-                    else:
-                        command = GetCommands.get_command("unknown")
+                    continue
+
+                parts = client_message.split()
+                if parts:
+                    command_type = parts[0].lower()
+                    command = GetCommands.get_command(command_type)
+                else:
+                    command = GetCommands.get_command("unknown")
 
                 logger.info(f"Received command: {client_message} from {client_inet_address}")
                 command.execute(connection, bank, client_message)
