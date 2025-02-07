@@ -14,7 +14,6 @@ def handle_client(connection, client_inet_address):
     connection.settimeout(CLIENT_TIMEOUT)
     print(f"Client connected from {client_inet_address[0]}:{client_inet_address[1]}")
     try:
-        connection.send("AHOJ\n\r".encode())
         bank = Bank.get_bank(server_inet_address[0])
         while True:
             try:
