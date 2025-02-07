@@ -1,10 +1,12 @@
 from src.bank import Account
 from src.command_interface import Command
 from src.proxy import proxy_request
+from logger import logger
 
 
 class BCCommand(Command):
     def execute(self, connection, bank, client_message):
+        logger.info("Executing BCCommand")
         connection.send(f"BC {bank.get_bank_code()}\r\n".encode())
 
 
@@ -12,8 +14,10 @@ class ACCommand(Command):
     def execute(self, connection, bank, client_message):
         try:
             account_number = bank.add_account()
+            logger.info(f"New account created: {account_number}/{bank.get_bank_code()}")
             connection.send(f"AC {account_number}/{bank.get_bank_code()}\r\n".encode())
         except Exception as e:
+            logger.error(f"Error creating account: {e}")
             connection.send(f"ER {e}\r\n".encode())
 
 
@@ -37,16 +41,20 @@ class ADCommand(Command):
 
             if ip != bank.get_bank_code():
                 response = proxy_request(ip, client_message)
+                logger.info(f"Proxying AD command to {ip}")
                 connection.send(response.encode())
                 return
 
             account = Account.get_account(account_code, ip)
             account.deposit(amount)
+            logger.info(f"Deposited {amount} to account {account_code}")
             connection.send("AD\r\n".encode())
 
         except ValueError:
+            logger.warning("Invalid AD command format")
             connection.send("ER Invalid account or amount.\r\n".encode())
         except Exception as e:
+            logger.error(f"Error in AD command: {e}")
             connection.send(f"ER {e}\r\n".encode())
 
 
@@ -70,21 +78,26 @@ class AWCommand(Command):
 
             if ip != bank.get_bank_code():
                 response = proxy_request(ip, client_message)
+                logger.info(f"Proxying AW command to {ip}")
                 connection.send(response.encode())
                 return
 
             account = Account.get_account(account_code, ip)
 
             if account.get_balance() < amount:
+                logger.warning(f"Insufficient funds for account {account_code}")
                 connection.send("ER Insufficient funds.\r\n".encode())
                 return
 
             account.withdraw(amount)
+            logger.info(f"Withdrew {amount} from account {account_code}")
             connection.send("AW\r\n".encode())
 
         except ValueError:
+            logger.warning("Invalid AW command format")
             connection.send("ER Invalid account or amount.\r\n".encode())
         except Exception as e:
+            logger.error(f"Error in AW command: {e}")
             connection.send(f"ER {e}\r\n".encode())
 
 
@@ -102,16 +115,22 @@ class ABCommand(Command):
 
             if ip != bank.get_bank_code():
                 response = proxy_request(ip, client_message)
+                logger.info(f"Proxying AB command to {ip}")
                 connection.send(response.encode())
                 return
 
             account = Account.get_account(account_code, ip)
-            connection.send(f"AB {account.get_balance()}\r\n".encode())
+            balance = account.get_balance()
+            logger.info(f"Balance for account {account_code}: {balance}")
+            connection.send(f"AB {balance}\r\n".encode())
 
         except ValueError:
+            logger.warning("Invalid AB command format")
             connection.send("ER Invalid account.\r\n".encode())
         except Exception as e:
+            logger.error(f"Error in AB command: {e}")
             connection.send(f"ER {e}\r\n".encode())
+
 
 class ARCommand(Command):
     def execute(self, connection, bank, client_message):
@@ -127,15 +146,19 @@ class ARCommand(Command):
             account = Account.get_account(account_code, ip)
 
             if account is None:
+                logger.warning(f"Account {account_code} not found")
                 connection.send("ER Account not found.\r\n".encode())
                 return
 
             account.remove()
+            logger.info(f"Removed account {account_code}")
             connection.send("AR\r\n".encode())
 
         except ValueError:
+            logger.warning("Invalid AR command format")
             connection.send("ER Invalid account.\r\n".encode())
         except Exception as e:
+            logger.error(f"Error in AR command: {e}")
             connection.send(f"ER {e}\r\n".encode())
 
 
@@ -143,8 +166,10 @@ class BACommand(Command):
     def execute(self, connection, bank, client_message):
         try:
             bank_amount = bank.get_bank_info()[1]
+            logger.info(f"Bank amount requested: {bank_amount}")
             connection.send(f"BA {bank_amount}\r\n".encode())
         except Exception as e:
+            logger.error(f"Error in BA command: {e}")
             connection.send(f"ER {e}\r\n".encode())
 
 
@@ -152,23 +177,28 @@ class BNCommand(Command):
     def execute(self, connection, bank, client_message):
         try:
             bank_count = bank.get_bank_info()[0]
+            logger.info(f"Bank count requested: {bank_count}")
             connection.send(f"BN {bank_count}\r\n".encode())
         except Exception as e:
+            logger.error(f"Error in BN command: {e}")
             connection.send(f"ER {e}\r\n".encode())
 
 
 class ExitCommand(Command):
     def execute(self, connection, bank, client_message):
+        logger.info("Closing connection.")
         connection.send("Closing connection.\r\n".encode())
 
 
 class HelpCommand(Command):
     def execute(self, connection, bank, client_message):
+        logger.info("Help command executed")
         connection.send("Available commands: exit, help, BC, AC, AD, AW, AB, AR, BA, BN\r\n".encode())
 
 
 class UnknownCommand(Command):
     def execute(self, connection, bank, client_message):
+        logger.warning(f"Unknown command received: {client_message}")
         connection.send("ER Unknown command\r\n".encode())
 
 
