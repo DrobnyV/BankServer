@@ -127,3 +127,15 @@ https://github.com/DrobnyV/ThetaDB/blob/main/src/database.py
 Socket server:
 
 Základní implementace socket serveru byla převzata z projektu, který jsme dělali v hodině.
+
+Testevání proběhlo pomocí spolužáků:
+Matěj Červenka
+Tomáš Hůla
+Daniel Linda
+
+Nalezené chyby:
+Špatné odpovědi při připojení naserver - opraveno.
+Špatné formátování a odřádkování - opraveno.
+Automatické posílání prázdné zprávy - opraveno.
+Špatný port range. - opraveno.
+Odesílání ER kvůli timeout i když vše bylo v pořádku.
