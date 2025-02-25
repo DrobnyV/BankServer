@@ -62,14 +62,10 @@ Instalace
 Naklonujte repozitář:
 
 git clone <URL_repozitáře>
-Nainstalujte závislosti:
 
-pip install -r requirements.txt
 Konfigurace
 Upravte soubor conf.ini podle potřeby:
 
-ini
-Copy
 [SERVER]
 HOST = 127.0.0.1
 PORT = 12345
@@ -116,13 +112,13 @@ Odkaz na konverzaci
 https://chatgpt.com/share/67933cf0-ea00-800a-b2be-fda54f923488
 
 Manuály a dokumentace
-Python SQLite3 dokumentace
+Python SQLite3 dokumentace - https://docs.python.org/3/library/sqlite3.html
 
-Python Socket Programming
+Python Socket Programming - https://realpython.com/python-sockets/
 
-Python Logging
+Python Logging - https://realpython.com/python-logging/
 
-https://www.geeksforgeeks.org/command-pattern/
+Command pattern - https://www.geeksforgeeks.org/command-pattern/
 
 3. Znovupoužitý kód
 Z předchozích projektů
